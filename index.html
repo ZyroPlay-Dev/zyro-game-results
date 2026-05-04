@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Zyro Jumping Game Results</title>
- <link rel="icon" type="image/png" href="/favicon.png">
+<link rel="icon" type="image/png" href="/favicon.png">
 
 <style>
     :root {
@@ -80,6 +80,21 @@
         color: white;
         border-color: var(--zyro-primary);
         box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    /* More Button Style */
+    .tab.more {
+        background: rgba(168, 85, 247, 0.1);
+        border: 1px dashed var(--zyro-secondary);
+        color: var(--zyro-secondary);
+    }
+
+    /* Hidden Calendar Input */
+    #calendarTrigger {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+        width: 0;
     }
 
     /* Active Date Display */
@@ -206,6 +221,8 @@
 <div class="sub-title">Daily Result</div>
 
 <div class="tabs" id="tabs"></div>
+<!-- Hidden input to trigger native calendar -->
+<input type="date" id="calendarTrigger">
 
 <div id="selectedDateDisplay">Loading date...</div>
 
@@ -244,6 +261,7 @@ async function loadSheets() {
         sheetData = data;
         originalSheetData = data;
 
+        // Sort dates descending (newest first)
         const sheetNames = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
 
         if (sheetNames.length === 0) {
@@ -262,7 +280,11 @@ async function loadSheets() {
 function createTabs(names) {
     const tabs = document.getElementById("tabs");
     tabs.innerHTML = "";
-    names.forEach(name => {
+    
+    // 1. Take only the 4 most recent dates
+    const recentDates = names.slice(0, 4);
+    
+    recentDates.forEach(name => {
         const tab = document.createElement("div");
         tab.className = `tab ${name === currentSheet ? 'active' : ''}`;
         tab.innerText = name;
@@ -273,16 +295,45 @@ function createTabs(names) {
         };
         tabs.appendChild(tab);
     });
+
+    // 2. Add "More" Button
+    const moreTab = document.createElement("div");
+    moreTab.className = "tab more";
+    moreTab.innerText = "📅 More";
+    moreTab.onclick = () => {
+        try {
+            document.getElementById('calendarTrigger').showPicker();
+        } catch (e) {
+            document.getElementById('calendarTrigger').click();
+        }
+    };
+    tabs.appendChild(moreTab);
+
+    // 3. Calendar Selection Logic
+    const calendar = document.getElementById('calendarTrigger');
+    calendar.addEventListener('change', (e) => {
+        const selected = e.target.value; // Format: YYYY-MM-DD
+        
+        // Check if the selected date exists in our keys
+        if (originalSheetData[selected]) {
+            currentSheet = selected;
+            renderTable(originalSheetData[selected]);
+            updateTabs();
+        } else {
+            // Error handling: date not in sheet
+            alert(`No game data found for ${selected}. Please select a date with recorded results.`);
+        }
+    });
 }
 
 function updateTabs() {
     document.querySelectorAll(".tab").forEach(tab => {
+        // Highlight tab if it matches current selection, otherwise remove active
         tab.classList.toggle("active", tab.innerText === currentSheet);
     });
 }
 
 function renderTable(data) {
-    // Update the Date Heading
     document.getElementById("selectedDateDisplay").innerText = `Results for ${currentSheet}`;
 
     if (!data || data.length === 0) {
