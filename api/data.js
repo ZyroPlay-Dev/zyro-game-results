@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     const search = req.query.search ? String(req.query.search) : "";
 
     // 📡 Build Apps Script URL
-    const url = `https://script.google.com/macros/s/AKfycbxN8T2RDagP72TyDpV2V2uvhUAVPwDPGHNafE1p1VpP3j5dSneGGHFnUPLvB7a0D2FijA/exec?key=${API_KEY}&search=${encodeURIComponent(search)}`;
+    const url = `https://script.google.com/macros/s/AKfycbx8jlmMOwyeP7ypdIofSlpsuu8wk3uMF-gsFtzkk0jdAoR7VMiR9GAQX5ZhZ5mzTn4zig/exec?key=${API_KEY}&search=${encodeURIComponent(search)}`;
 
     // 🌐 Fetch data from Apps Script
     const response = await fetch(url);
