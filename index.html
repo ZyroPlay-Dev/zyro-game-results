@@ -1,19 +1,91 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Game Results</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: linear-gradient(135deg, #0f172a, #312e81);
+    color: white;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 { text-align: center; }
+
+/* Tabs */
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.tab {
+    padding: 10px 15px;
+    margin: 5px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.tab.active { background: #6366f1; }
+
+/* Search */
+.search-box {
+    max-width: 400px;
+    margin: 10px auto;
+    display: flex;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 10px;
+    border: none;
+}
+
+.search-box button {
+    padding: 10px;
+    background: #6366f1;
+    color: white;
+    border: none;
+}
+
+/* Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 10px;
+    text-align: center;
+}
+
+th { background: #6366f1; }
+
+tr:nth-child(even) {
+    background: rgba(255,255,255,0.05);
+}
+</style>
 </head>
 
 <body>
 
-<h2>Game Results</h2>
+<h1>🎮 Game Results</h1>
 
-<div id="tabs"></div>
-<input id="searchInput" placeholder="Search">
-<button onclick="searchData()">Search</button>
+<div class="tabs" id="tabs"></div>
 
-<div id="content"></div>
+<div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search Name or Email">
+    <button onclick="searchData()">Search</button>
+</div>
+
+<div id="content">Loading...</div>
 
 <script>
 const API_URL = "/api/data";
@@ -21,61 +93,90 @@ const API_URL = "/api/data";
 let sheetData = {};
 let currentSheet = "";
 
+// Load all data
 async function loadSheets() {
-  const res = await fetch(API_URL);
-  const data = await res.json();
+    const res = await fetch(API_URL);
+    const data = await res.json();
 
-  sheetData = data;
-  const names = Object.keys(data);
+    sheetData = data;
 
-  currentSheet = names[0];
+    const sheetNames = Object.keys(data);
 
-  createTabs(names);
-  renderTable(sheetData[currentSheet]);
+    if (sheetNames.length === 0) {
+        document.getElementById("content").innerHTML = "No data found";
+        return;
+    }
+
+    currentSheet = sheetNames[0];
+
+    createTabs(sheetNames);
+    renderTable(sheetData[currentSheet]);
 }
 
+// Create tabs
 function createTabs(names) {
-  const tabs = document.getElementById("tabs");
-  tabs.innerHTML = "";
+    const tabs = document.getElementById("tabs");
+    tabs.innerHTML = "";
 
-  names.forEach(name => {
-    const btn = document.createElement("button");
-    btn.innerText = name;
+    names.forEach(name => {
+        const tab = document.createElement("div");
+        tab.className = "tab";
+        tab.innerText = name;
 
-    btn.onclick = () => {
-      currentSheet = name;
-      renderTable(sheetData[name]);
-    };
+        if (name === currentSheet) tab.classList.add("active");
 
-    tabs.appendChild(btn);
-  });
+        tab.onclick = () => {
+            currentSheet = name;
+            renderTable(sheetData[name]);
+            updateTabs();
+        };
+
+        tabs.appendChild(tab);
+    });
 }
 
+// Update active tab
+function updateTabs() {
+    document.querySelectorAll(".tab").forEach(tab => {
+        tab.classList.remove("active");
+        if (tab.innerText === currentSheet) tab.classList.add("active");
+    });
+}
+
+// Render table
 function renderTable(data) {
-  let html = "<table border='1'><tr><th>Rank</th><th>Name</th><th>Score</th></tr>";
+    let html = "<table><tr><th>Rank</th><th>Name</th><th>Score</th></tr>";
 
-  data.forEach(r => {
-    html += `<tr>
-      <td>${r.Rank}</td>
-      <td>${r.Name}</td>
-      <td>${r.Score}</td>
-    </tr>`;
-  });
+    data.forEach(row => {
+        html += `
+        <tr>
+            <td>${row.Rank || ""}</td>
+            <td>${row.Name || ""}</td>
+            <td>${row.Score || ""}</td>
+        </tr>`;
+    });
 
-  html += "</table>";
-  document.getElementById("content").innerHTML = html;
+    html += "</table>";
+    document.getElementById("content").innerHTML = html;
 }
 
-function searchData() {
-  const q = document.getElementById("searchInput").value.toLowerCase();
+// Search (secure backend)
+async function searchData() {
+    const query = document.getElementById("searchInput").value;
 
-  const filtered = sheetData[currentSheet].filter(r =>
-    (r.Name && r.Name.toLowerCase().includes(q))
-  );
+    const res = await fetch(`/api/data?search=${encodeURIComponent(query)}`);
+    const data = await res.json();
 
-  renderTable(filtered);
+    sheetData = data;
+
+    const names = Object.keys(data);
+    currentSheet = names[0];
+
+    createTabs(names);
+    renderTable(sheetData[currentSheet]);
 }
 
+// Init
 loadSheets();
 </script>
 
