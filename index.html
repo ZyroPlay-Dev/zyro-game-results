@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,10 +49,7 @@ h1 { text-align: center; }
 }
 
 .search-box button {
-    padding: 10px;
-    background: #6366f1;
-    color: white;
-    border: none;
+    display: none; /* hidden (live search used) */
 }
 
 /* Table */
@@ -82,7 +80,6 @@ tr:nth-child(even) {
 
 <div class="search-box">
     <input type="text" id="searchInput" placeholder="Search Name or Email">
-    <button onclick="searchData()">Search</button>
 </div>
 
 <div id="content">Loading...</div>
@@ -92,6 +89,8 @@ const API_URL = "/api/data";
 
 let sheetData = {};
 let currentSheet = "";
+let originalSheetData = {}; // keep original copy
+let searchTimeout;
 
 // Load all data
 async function loadSheets() {
@@ -99,8 +98,12 @@ async function loadSheets() {
     const data = await res.json();
 
     sheetData = data;
+    originalSheetData = data;
 
-    const sheetNames = Object.keys(data);
+    // Sort sheet names (latest date first)
+    const sheetNames = Object.keys(data).sort((a, b) => {
+        return new Date(b) - new Date(a);
+    });
 
     if (sheetNames.length === 0) {
         document.getElementById("content").innerHTML = "No data found";
@@ -145,6 +148,11 @@ function updateTabs() {
 
 // Render table
 function renderTable(data) {
+    if (!data || data.length === 0) {
+        document.getElementById("content").innerHTML = "No results found";
+        return;
+    }
+
     let html = "<table><tr><th>Rank</th><th>Name</th><th>Score</th></tr>";
 
     data.forEach(row => {
@@ -160,21 +168,29 @@ function renderTable(data) {
     document.getElementById("content").innerHTML = html;
 }
 
-// Search (secure backend)
-async function searchData() {
-    const query = document.getElementById("searchInput").value;
+// Live Search (client-side)
+function searchDataLive(query) {
+    if (!query) {
+        renderTable(originalSheetData[currentSheet]);
+        return;
+    }
 
-    const res = await fetch(`/api/data?search=${encodeURIComponent(query)}`);
-    const data = await res.json();
+    const filtered = originalSheetData[currentSheet].filter(row =>
+        (row.Name && row.Name.toLowerCase().includes(query.toLowerCase())) ||
+        (row.Email && row.Email.toLowerCase().includes(query.toLowerCase()))
+    );
 
-    sheetData = data;
-
-    const names = Object.keys(data);
-    currentSheet = names[0];
-
-    createTabs(names);
-    renderTable(sheetData[currentSheet]);
+    renderTable(filtered);
 }
+
+// Input event (debounce)
+document.getElementById("searchInput").addEventListener("input", (e) => {
+    clearTimeout(searchTimeout);
+
+    searchTimeout = setTimeout(() => {
+        searchDataLive(e.target.value);
+    }, 300);
+});
 
 // Init
 loadSheets();
@@ -182,3 +198,4 @@ loadSheets();
 
 </body>
 </html>
+
