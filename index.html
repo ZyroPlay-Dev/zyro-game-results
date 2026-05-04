@@ -96,10 +96,11 @@
     #content {
         max-width: 800px; margin: 0 auto; background: var(--zyro-card);
         border-radius: 16px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
     }
 
     table { width: 100%; border-collapse: collapse; }
-    th { background: rgba(255, 255, 255, 0.02); padding: 16px; color: #6b7280; font-size: 0.75rem; text-transform: uppercase; }
+    th { background: rgba(255, 255, 255, 0.02); padding: 16px; color: #6b7280; font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
     td { padding: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.02); text-align: center; }
 
     /* Custom Calendar Modal */
@@ -119,13 +120,17 @@
     
     .cal-date {
         padding: 10px 0; border-radius: 8px; font-size: 0.9rem; cursor: pointer;
-        transition: 0.2s; position: relative;
+        transition: 0.2s; border: 1px solid transparent;
     }
 
-    .date-available { background: rgba(34, 197, 94, 0.15); color: var(--success); border: 1px solid var(--success); }
-    .date-empty { background: rgba(239, 68, 68, 0.1); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.2); cursor: not-allowed; opacity: 0.6; }
+    /* GREEN: Date exists in sheet */
+    .date-available { background: rgba(34, 197, 94, 0.15); color: var(--success); border-color: var(--success); font-weight: bold; }
+    /* RED: Date not in sheet */
+    .date-empty { background: rgba(239, 68, 68, 0.1); color: var(--error); border-color: rgba(239, 68, 68, 0.3); cursor: not-allowed; opacity: 0.7; }
+    
     .cal-date:hover:not(.date-empty) { transform: scale(1.1); background: var(--success); color: white; }
 
+    /* Rank Popup */
     .popup { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center; }
     .popup-content { background: #1f2937; padding: 40px; border-radius: 28px; text-align: center; width: 90%; max-width: 320px; position: relative; }
     .close { position: absolute; right: 20px; top: 15px; color: #9ca3af; font-size: 28px; cursor: pointer; }
@@ -139,7 +144,7 @@
 
 <div class="tabs" id="tabs"></div>
 
-<div id="selectedDateDisplay" style="text-align: center; margin-bottom: 20px; font-weight: 600;">Loading...</div>
+<div id="selectedDateDisplay" style="text-align: center; margin-bottom: 20px; font-weight: 600; color: #e5e7eb;">Loading...</div>
 
 <div class="search-box">
     <input type="text" id="searchInput" placeholder="Search Player Name...">
@@ -151,12 +156,11 @@
 <div id="calendarModal" onclick="if(event.target == this) this.style.display='none'">
     <div class="cal-container">
         <div class="cal-header">
-            <button onclick="changeMonth(-1)" style="background:none; border:none; color:white; cursor:pointer;">◀</button>
-            <span id="calMonthYear" style="font-weight: bold;"></span>
-            <button onclick="changeMonth(1)" style="background:none; border:none; color:white; cursor:pointer;">▶</button>
+            <button onclick="changeMonth(-1)" style="background:none; border:none; color:white; font-size: 1.2rem; cursor:pointer;">◀</button>
+            <span id="calMonthYear" style="font-weight: bold; color: white;"></span>
+            <button onclick="changeMonth(1)" style="background:none; border:none; color:white; font-size: 1.2rem; cursor:pointer;">▶</button>
         </div>
         <div class="cal-grid" id="calGrid">
-            <!-- Names of days -->
             <div class="cal-day-name">Sun</div><div class="cal-day-name">Mon</div><div class="cal-day-name">Tue</div>
             <div class="cal-day-name">Wed</div><div class="cal-day-name">Thu</div><div class="cal-day-name">Fri</div>
             <div class="cal-day-name">Sat</div>
@@ -170,8 +174,8 @@
         <span class="close" onclick="closePopup()">&times;</span>
         <div id="popupEmoji" style="font-size: 4rem;">🏆</div>
         <h2 id="popupTitle"></h2>
-        <p id="popupScore" style="color: var(--zyro-primary); font-size: 1.5rem;"></p>
-        <p id="popupRank"></p>
+        <p id="popupScore" style="color: var(--zyro-primary); font-size: 1.5rem; font-weight: bold;"></p>
+        <p id="popupRank" style="color: #9ca3af;"></p>
     </div>
 </div>
 
@@ -179,7 +183,16 @@
 const API_URL = "/api/data";
 let originalSheetData = {};
 let currentSheet = "";
-let viewDate = new Date(); // For calendar navigation
+let viewDate = new Date(); 
+
+// Helper to format JS Date into "DD-MMM-YYYY" to match your image/sheet names
+function formatDateForSheet(date) {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+}
 
 async function loadSheets() {
     try {
@@ -187,43 +200,50 @@ async function loadSheets() {
         const data = await res.json();
         originalSheetData = data;
 
+        // Get keys and sort them (Newest first)
         const sheetNames = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
-        if (sheetNames.length === 0) return;
+        if (sheetNames.length === 0) {
+            document.getElementById("content").innerHTML = "<div style='padding:40px; text-align:center;'>No data available.</div>";
+            return;
+        }
 
         currentSheet = sheetNames[0];
         createTabs(sheetNames);
         renderTable(data[currentSheet]);
     } catch (e) {
-        document.getElementById("content").innerHTML = "Error connecting to data.";
+        document.getElementById("content").innerHTML = "<div style='padding:40px; color:var(--error); text-align:center;'>Failed to load data.</div>";
     }
 }
 
 function createTabs(names) {
     const tabs = document.getElementById("tabs");
     tabs.innerHTML = "";
+    
+    // Show top 4 recent
     names.slice(0, 4).forEach(name => {
         const tab = document.createElement("div");
         tab.className = `tab ${name === currentSheet ? 'active' : ''}`;
         tab.innerText = name;
-        tab.onclick = () => { currentSheet = name; renderTable(originalSheetData[name]); updateTabs(); };
+        tab.onclick = () => { 
+            currentSheet = name; 
+            renderTable(originalSheetData[name]); 
+            updateTabs(); 
+        };
         tabs.appendChild(tab);
     });
 
     const moreBtn = document.createElement("div");
     moreBtn.className = "tab more";
     moreBtn.innerText = "📅 More";
-    moreBtn.onclick = openCalendar;
+    moreBtn.onclick = () => {
+        document.getElementById("calendarModal").style.display = "flex";
+        renderCalendar();
+    };
     tabs.appendChild(moreBtn);
 }
 
 function updateTabs() {
     document.querySelectorAll(".tab").forEach(tab => tab.classList.toggle("active", tab.innerText === currentSheet));
-}
-
-// Custom Calendar Logic
-function openCalendar() {
-    document.getElementById("calendarModal").style.display = "flex";
-    renderCalendar();
 }
 
 function changeMonth(offset) {
@@ -235,8 +255,8 @@ function renderCalendar() {
     const grid = document.getElementById("calGrid");
     const monthYear = document.getElementById("calMonthYear");
     
-    // Clear previous dates but keep day headers
-    const headers = grid.querySelectorAll('.cal-day-name');
+    // Reset grid but keep weekday headers
+    const headers = Array.from(grid.querySelectorAll('.cal-day-name'));
     grid.innerHTML = "";
     headers.forEach(h => grid.appendChild(h));
 
@@ -247,31 +267,30 @@ function renderCalendar() {
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    // Empty cells for alignment
+    // Padding for first week
     for (let i = 0; i < firstDay; i++) {
-        const empty = document.createElement("div");
-        grid.appendChild(empty);
+        grid.appendChild(document.createElement("div"));
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
         const dateObj = new Date(year, month, day);
-        // Format to match your sheet keys (Assuming YYYY-MM-DD)
-        const dateStr = dateObj.toISOString().split('T')[0];
+        const dateKey = formatDateForSheet(dateObj); // Converts to "02-Aug-2026"
         
         const cell = document.createElement("div");
         cell.className = "cal-date";
         cell.innerText = day;
 
-        if (originalSheetData[dateStr]) {
-            cell.classList.add("date-available");
+        // CHECK IF DATE EXISTS IN DATA
+        if (originalSheetData[dateKey]) {
+            cell.classList.add("date-available"); // GREEN
             cell.onclick = () => {
-                currentSheet = dateStr;
-                renderTable(originalSheetData[dateStr]);
+                currentSheet = dateKey;
+                renderTable(originalSheetData[dateKey]);
                 updateTabs();
                 document.getElementById("calendarModal").style.display = "none";
             };
         } else {
-            cell.classList.add("date-empty");
+            cell.classList.add("date-empty"); // RED
         }
         grid.appendChild(cell);
     }
@@ -280,17 +299,17 @@ function renderCalendar() {
 function renderTable(data) {
     document.getElementById("selectedDateDisplay").innerText = `Results for ${currentSheet}`;
     if (!data || data.length === 0) {
-        document.getElementById("content").innerHTML = "<div style='padding:40px;'>No data.</div>";
+        document.getElementById("content").innerHTML = "<div style='padding:40px; text-align:center;'>No data for this date.</div>";
         return;
     }
     let html = "<table><thead><tr><th>Rank</th><th style='text-align:left;'>Player</th><th>Score</th></tr></thead><tbody>";
     data.forEach(row => {
         let rank = Number(row.Rank);
-        let medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : rank;
+        let medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : `<span style="opacity:0.3;">${rank}</span>`;
         html += `<tr onclick="showPopup('${row.Name}', '${row.Score}', '${rank}')">
             <td>${medal}</td>
-            <td style='text-align:left;'>${row.Name}</td>
-            <td>${row.Score}</td>
+            <td style='text-align:left; font-weight:500;'>${row.Name || "Unknown"}</td>
+            <td style="font-family: monospace; font-weight: bold;">${row.Score || 0}</td>
         </tr>`;
     });
     document.getElementById("content").innerHTML = html + "</tbody></table>";
@@ -300,7 +319,9 @@ function showPopup(name, score, rank) {
     document.getElementById("popup").style.display = "flex";
     document.getElementById("popupTitle").innerText = name;
     document.getElementById("popupScore").innerText = score;
-    document.getElementById("popupRank").innerText = `Rank #${rank}`;
+    document.getElementById("popupRank").innerText = `Position: Rank #${rank}`;
+    let emoji = rank == 1 ? "🥇" : rank == 2 ? "🥈" : rank == 3 ? "🥉" : "🏆";
+    document.getElementById("popupEmoji").innerText = emoji;
 }
 
 function closePopup() { document.getElementById("popup").style.display = "none"; }
