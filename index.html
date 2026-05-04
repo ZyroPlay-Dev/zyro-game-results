@@ -7,7 +7,7 @@
 <link rel="icon" type="image/png" href="/favicon.png">
 
 <style>
-    :root {
+     :root {
         --primary: #ff2e63;
             --secondary: #08d9d6;
             --bg-dark: #0f0f1a;
@@ -40,26 +40,27 @@
 
         h1 {
             font-weight: 800;
-            font-size: 2.2rem;
-            margin-bottom: 10px;
+            font-size: 1.8rem;
+            margin: 0 auto 10px auto; /* center horizontally */
+            text-align: center; /* ensures text is centered */
+            display: block;
+            margin-top: 30px;
             background: linear-gradient(to right, #fff, var(--primary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
 
-@keyframes gradientMove {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+           text-transform: uppercase;
+            letter-spacing: 2px;
 }
+        
+
 
     .sub-title {
+        font-weight: 800;
         text-align: center;
-        color: #9ca3af;
+        color: #FFFFFF;
         margin-bottom: 30px;
-        font-size: 0.9rem;
+        font-size: 1rem;
         text-transform: uppercase;
         letter-spacing: 0.1em;
     }
