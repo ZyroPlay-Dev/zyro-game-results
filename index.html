@@ -1,163 +1,229 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Game Results</title>
+<title>Zyro Jumping Game Results</title>
 
 <style>
-body {
-    font-family: Arial;
-    background: linear-gradient(135deg, #0f172a, #312e81);
-    color: white;
-    margin: 0;
-    padding: 20px;
-}
+    :root {
+        --zyro-primary: #6366f1; 
+        --zyro-secondary: #a855f7; 
+        --zyro-bg: #030712;
+        --zyro-card: #111827;
+        --gold: #fcd34d;
+        --silver: #e5e7eb;
+        --bronze: #fb923c;
+    }
 
-h1 { text-align: center; }
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background-color: var(--zyro-bg);
+        background-image: 
+            radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+            radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.15) 0px, transparent 50%);
+        color: #f3f4f6;
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+    }
 
-/* Tabs */
-.tabs {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin: 20px 0;
-}
+    h1 { 
+        text-align: center; 
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        background: linear-gradient(to right, #818cf8, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
+        font-size: 2.5rem;
+    }
 
-.tab {
-    padding: 10px 15px;
-    margin: 5px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 8px;
-    cursor: pointer;
-}
+    .sub-title {
+        text-align: center;
+        color: #9ca3af;
+        margin-bottom: 30px;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
 
-.tab.active { background: #6366f1; }
+    /* Tabs - Date Selection */
+    .tabs {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 25px;
+    }
 
-/* Search */
-.search-box {
-    max-width: 400px;
-    margin: 10px auto;
-}
+    .tab {
+        padding: 8px 20px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 9999px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #9ca3af;
+    }
 
-.search-box input {
-    width: 100%;
-    padding: 10px;
-    border: none;
-}
+    .tab:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: white;
+    }
 
-/* Table */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
+    .tab.active { 
+        background: var(--zyro-primary); 
+        color: white;
+        border-color: var(--zyro-primary);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
 
-th, td {
-    padding: 10px;
-    text-align: center;
-}
+    /* Active Date Display */
+    #selectedDateDisplay {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
 
-th { background: #6366f1; }
+    #selectedDateDisplay::before {
+        content: "📅";
+        font-size: 1rem;
+    }
 
-tr:nth-child(even) {
-    background: rgba(255,255,255,0.05);
-}
+    /* Search */
+    .search-box {
+        max-width: 500px;
+        margin: 0 auto 30px auto;
+    }
 
-/* Top 3 Animated Glow */
-@keyframes glowGold {
-    0% { box-shadow: 0 0 5px gold; }
-    50% { box-shadow: 0 0 20px gold; }
-    100% { box-shadow: 0 0 5px gold; }
-}
+    .search-box input {
+        width: 100%;
+        padding: 14px 20px;
+        background: var(--zyro-card);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        color: white;
+        font-size: 1rem;
+        box-sizing: border-box;
+    }
 
-@keyframes glowSilver {
-    0% { box-shadow: 0 0 5px silver; }
-    50% { box-shadow: 0 0 15px silver; }
-    100% { box-shadow: 0 0 5px silver; }
-}
+    .search-box input:focus {
+        outline: none;
+        border-color: var(--zyro-primary);
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
 
-@keyframes glowBronze {
-    0% { box-shadow: 0 0 5px peru; }
-    50% { box-shadow: 0 0 15px peru; }
-    100% { box-shadow: 0 0 5px peru; }
-}
+    /* Table Container */
+    #content {
+        max-width: 800px;
+        margin: 0 auto;
+        background: var(--zyro-card);
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    }
 
-.gold {
-    background: rgba(255, 215, 0, 0.2);
-    animation: glowGold 2s infinite;
-    cursor: pointer;
-}
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
 
-.silver {
-    background: rgba(192, 192, 192, 0.2);
-    animation: glowSilver 2s infinite;
-    cursor: pointer;
-}
+    th { 
+        background: rgba(255, 255, 255, 0.02);
+        padding: 16px;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6b7280;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
 
-.bronze {
-    background: rgba(205, 127, 50, 0.2);
-    animation: glowBronze 2s infinite;
-    cursor: pointer;
-}
+    td {
+        padding: 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+        font-size: 0.95rem;
+        text-align: center;
+    }
 
-/* Popup */
-.popup {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.7);
-    justify-content: center;
-    align-items: center;
-}
+    .gold { background: rgba(252, 211, 77, 0.05); color: var(--gold); font-weight: bold; }
+    .silver { color: var(--silver); font-weight: bold; }
+    .bronze { color: var(--bronze); font-weight: bold; }
 
-.popup-content {
-    background: #1e293b;
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
-    min-width: 250px;
-    animation: popupScale 0.3s ease;
-}
+    tr:hover:not(th) {
+        background: rgba(255, 255, 255, 0.04);
+        cursor: pointer;
+    }
 
-@keyframes popupScale {
-    from { transform: scale(0.7); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
+    /* Popup */
+    .popup {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(6px);
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+    }
 
-.close {
-    position: absolute;
-    right: 20px;
-    top: 10px;
-    cursor: pointer;
-    font-size: 20px;
-}
+    .popup-content {
+        background: #1f2937;
+        padding: 40px;
+        border-radius: 28px;
+        text-align: center;
+        width: 90%;
+        max-width: 320px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+    }
+
+    .close {
+        position: absolute;
+        right: 20px;
+        top: 15px;
+        color: #9ca3af;
+        font-size: 28px;
+        cursor: pointer;
+    }
+
 </style>
 </head>
 
 <body>
 
-<h1>🎮 Game Results</h1>
+<h1>Zyro Jumping Game</h1>
+<div class="sub-title">Daily Result</div>
 
 <div class="tabs" id="tabs"></div>
 
+<div id="selectedDateDisplay">Loading date...</div>
+
 <div class="search-box">
-    <input type="text" id="searchInput" placeholder="Search Name or Email">
+    <input type="text" id="searchInput" placeholder="Search Player Name or Email...">
 </div>
 
-<div id="content">Loading...</div>
+<div id="content">
+    <div style="padding: 40px; text-align: center; color: #6b7280;">Initializing data...</div>
+</div>
 
 <!-- Popup -->
-<div id="popup" class="popup">
+<div id="popup" class="popup" onclick="if(event.target == this) closePopup()">
     <div class="popup-content">
-        <span class="close" onclick="closePopup()">×</span>
-        <h2 id="popupTitle"></h2>
-        <p id="popupScore"></p>
-        <p id="popupRank"></p>
+        <span class="close" onclick="closePopup()">&times;</span>
+        <div id="popupEmoji" style="font-size: 4rem; margin-bottom: 10px;">🏆</div>
+        <h2 id="popupTitle" style="margin: 10px 0;"></h2>
+        <p id="popupScore" style="font-size: 1.5rem; color: var(--zyro-primary); font-weight: bold; margin: 5px 0;"></p>
+        <p id="popupRank" style="color: #9ca3af; margin-top: 10px;"></p>
     </div>
 </div>
 
@@ -169,113 +235,98 @@ let originalSheetData = {};
 let currentSheet = "";
 let searchTimeout;
 
-// Load data
 async function loadSheets() {
-    const res = await fetch(API_URL);
-    const data = await res.json();
+    try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
 
-    sheetData = data;
-    originalSheetData = data;
+        sheetData = data;
+        originalSheetData = data;
 
-    const sheetNames = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
+        const sheetNames = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
 
-    if (sheetNames.length === 0) {
-        document.getElementById("content").innerHTML = "No data found";
-        return;
+        if (sheetNames.length === 0) {
+            document.getElementById("content").innerHTML = "<div style='padding:20px;'>No data available.</div>";
+            return;
+        }
+
+        currentSheet = sheetNames[0];
+        createTabs(sheetNames);
+        renderTable(sheetData[currentSheet]);
+    } catch (e) {
+        document.getElementById("content").innerHTML = "<div style='padding:20px; color:#ef4444;'>Failed to connect to API.</div>";
     }
-
-    currentSheet = sheetNames[0];
-
-    createTabs(sheetNames);
-    renderTable(sheetData[currentSheet]);
 }
 
-// Tabs
 function createTabs(names) {
     const tabs = document.getElementById("tabs");
     tabs.innerHTML = "";
-
     names.forEach(name => {
         const tab = document.createElement("div");
-        tab.className = "tab";
+        tab.className = `tab ${name === currentSheet ? 'active' : ''}`;
         tab.innerText = name;
-
-        if (name === currentSheet) tab.classList.add("active");
-
         tab.onclick = () => {
             currentSheet = name;
             renderTable(originalSheetData[name]);
             updateTabs();
         };
-
         tabs.appendChild(tab);
     });
 }
 
 function updateTabs() {
     document.querySelectorAll(".tab").forEach(tab => {
-        tab.classList.remove("active");
-        if (tab.innerText === currentSheet) tab.classList.add("active");
+        tab.classList.toggle("active", tab.innerText === currentSheet);
     });
 }
 
-// Render table
 function renderTable(data) {
+    // Update the Date Heading
+    document.getElementById("selectedDateDisplay").innerText = `Results for ${currentSheet}`;
+
     if (!data || data.length === 0) {
-        document.getElementById("content").innerHTML = "No results found";
+        document.getElementById("content").innerHTML = "<div style='padding:40px; text-align:center;'>No entries for this date.</div>";
         return;
     }
 
-    let html = "<table><tr><th>Rank</th><th>Name</th><th>Score</th></tr>";
+    let html = "<table><thead><tr><th>Rank</th><th style='text-align:left;'>Player</th><th>Score</th></tr></thead><tbody>";
 
     data.forEach(row => {
         let rank = Number(row.Rank);
         let medal = "";
         let rowClass = "";
 
-        if (rank === 1) {
-            medal = "🥇";
-            rowClass = "gold";
-        } else if (rank === 2) {
-            medal = "🥈";
-            rowClass = "silver";
-        } else if (rank === 3) {
-            medal = "🥉";
-            rowClass = "bronze";
-        }
+        if (rank === 1) { medal = "🥇"; rowClass = "gold"; }
+        else if (rank === 2) { medal = "🥈"; rowClass = "silver"; }
+        else if (rank === 3) { medal = "🥉"; rowClass = "bronze"; }
+        else { medal = `<span style="opacity:0.3;">${rank}</span>`; }
 
         html += `
         <tr class="${rowClass}" onclick="showPopup('${row.Name}', '${row.Score}', '${rank}')">
-            <td>${medal} ${rank || ""}</td>
-            <td>${row.Name || ""}</td>
-            <td>${row.Score || ""}</td>
+            <td style="width: 80px;">${medal}</td>
+            <td style="text-align: left; font-weight: 500;">${row.Name || "Unknown Player"}</td>
+            <td style="font-family: 'Courier New', monospace; font-weight: bold;">${row.Score || "0"}</td>
         </tr>`;
     });
 
-    html += "</table>";
+    html += "</tbody></table>";
     document.getElementById("content").innerHTML = html;
 }
 
-// Live search (Name + Email, email hidden)
 function searchDataLive(query) {
     if (!query) {
         renderTable(originalSheetData[currentSheet]);
         return;
     }
-
     query = query.toLowerCase();
-
     const filtered = originalSheetData[currentSheet].filter(row => {
         const name = (row.Name || "").toLowerCase();
         const email = (row.Email || row.email || "").toLowerCase();
-
         return name.includes(query) || email.includes(query);
     });
-
     renderTable(filtered);
 }
 
-// Input listener
 document.getElementById("searchInput").addEventListener("input", (e) => {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
@@ -283,28 +334,25 @@ document.getElementById("searchInput").addEventListener("input", (e) => {
     }, 300);
 });
 
-// Popup
 function showPopup(name, score, rank) {
     document.getElementById("popup").style.display = "flex";
+    let emoji = "🏆";
+    if (rank == 1) emoji = "🥇";
+    else if (rank == 2) emoji = "🥈";
+    else if (rank == 3) emoji = "🥉";
 
-    let trophy = "🏆";
-    if (rank == 1) trophy = "🥇";
-    else if (rank == 2) trophy = "🥈";
-    else if (rank == 3) trophy = "🥉";
-
-    document.getElementById("popupTitle").innerHTML = `${trophy} ${name}`;
-    document.getElementById("popupScore").innerHTML = `Score: ${score}`;
-    document.getElementById("popupRank").innerHTML = `Rank: ${rank}`;
+    document.getElementById("popupEmoji").innerHTML = emoji;
+    document.getElementById("popupTitle").innerText = name;
+    document.getElementById("popupScore").innerText = score;
+    document.getElementById("popupRank").innerText = `Position: Rank #${rank}`;
 }
 
 function closePopup() {
     document.getElementById("popup").style.display = "none";
 }
 
-// Init
 loadSheets();
 </script>
 
 </body>
 </html>
-
