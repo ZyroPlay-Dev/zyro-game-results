@@ -15,6 +15,8 @@
         --gold: #fcd34d;
         --silver: #e5e7eb;
         --bronze: #fb923c;
+        --success: #22c55e;
+        --error: #ef4444;
     }
 
     body {
@@ -49,7 +51,7 @@
         letter-spacing: 0.1em;
     }
 
-    /* Tabs - Date Selection */
+    /* Tabs */
     .tabs {
         display: flex;
         flex-wrap: wrap;
@@ -70,11 +72,6 @@
         color: #9ca3af;
     }
 
-    .tab:hover {
-        background: rgba(255, 255, 255, 0.08);
-        color: white;
-    }
-
     .tab.active { 
         background: var(--zyro-primary); 
         color: white;
@@ -82,136 +79,56 @@
         box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
 
-    /* More Button Style */
     .tab.more {
         background: rgba(168, 85, 247, 0.1);
         border: 1px dashed var(--zyro-secondary);
         color: var(--zyro-secondary);
     }
 
-    /* Hidden Calendar Input */
-    #calendarTrigger {
-        position: absolute;
-        opacity: 0;
-        pointer-events: none;
-        width: 0;
-    }
-
-    /* Active Date Display */
-    #selectedDateDisplay {
-        text-align: center;
-        margin-bottom: 20px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #e5e7eb;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
-
-    #selectedDateDisplay::before {
-        content: "📅";
-        font-size: 1rem;
-    }
-
-    /* Search */
-    .search-box {
-        max-width: 500px;
-        margin: 0 auto 30px auto;
-    }
-
+    /* Table & Search */
+    .search-box { max-width: 500px; margin: 0 auto 30px auto; }
     .search-box input {
-        width: 100%;
-        padding: 14px 20px;
-        background: var(--zyro-card);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        color: white;
-        font-size: 1rem;
-        box-sizing: border-box;
+        width: 100%; padding: 14px 20px; background: var(--zyro-card);
+        border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
+        color: white; font-size: 1rem; box-sizing: border-box;
     }
 
-    .search-box input:focus {
-        outline: none;
-        border-color: var(--zyro-primary);
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-    }
-
-    /* Table Container */
     #content {
-        max-width: 800px;
-        margin: 0 auto;
-        background: var(--zyro-card);
-        border-radius: 16px;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        max-width: 800px; margin: 0 auto; background: var(--zyro-card);
+        border-radius: 16px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
+    table { width: 100%; border-collapse: collapse; }
+    th { background: rgba(255, 255, 255, 0.02); padding: 16px; color: #6b7280; font-size: 0.75rem; text-transform: uppercase; }
+    td { padding: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.02); text-align: center; }
+
+    /* Custom Calendar Modal */
+    #calendarModal {
+        display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+        z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(8px);
     }
 
-    th { 
-        background: rgba(255, 255, 255, 0.02);
-        padding: 16px;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #6b7280;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    .cal-container {
+        background: #1f2937; padding: 25px; border-radius: 20px; width: 90%; max-width: 350px;
+        border: 1px solid rgba(255,255,255,0.1);
     }
 
-    td {
-        padding: 16px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-        font-size: 0.95rem;
-        text-align: center;
+    .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; }
+    .cal-day-name { font-size: 0.7rem; color: #6b7280; font-weight: bold; margin-bottom: 5px; }
+    
+    .cal-date {
+        padding: 10px 0; border-radius: 8px; font-size: 0.9rem; cursor: pointer;
+        transition: 0.2s; position: relative;
     }
 
-    .gold { background: rgba(252, 211, 77, 0.05); color: var(--gold); font-weight: bold; }
-    .silver { color: var(--silver); font-weight: bold; }
-    .bronze { color: var(--bronze); font-weight: bold; }
+    .date-available { background: rgba(34, 197, 94, 0.15); color: var(--success); border: 1px solid var(--success); }
+    .date-empty { background: rgba(239, 68, 68, 0.1); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.2); cursor: not-allowed; opacity: 0.6; }
+    .cal-date:hover:not(.date-empty) { transform: scale(1.1); background: var(--success); color: white; }
 
-    tr:hover:not(th) {
-        background: rgba(255, 255, 255, 0.04);
-        cursor: pointer;
-    }
-
-    /* Popup */
-    .popup {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(6px);
-        justify-content: center;
-        align-items: center;
-        z-index: 100;
-    }
-
-    .popup-content {
-        background: #1f2937;
-        padding: 40px;
-        border-radius: 28px;
-        text-align: center;
-        width: 90%;
-        max-width: 320px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        position: relative;
-    }
-
-    .close {
-        position: absolute;
-        right: 20px;
-        top: 15px;
-        color: #9ca3af;
-        font-size: 28px;
-        cursor: pointer;
-    }
-
+    .popup { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center; }
+    .popup-content { background: #1f2937; padding: 40px; border-radius: 28px; text-align: center; width: 90%; max-width: 320px; position: relative; }
+    .close { position: absolute; right: 20px; top: 15px; color: #9ca3af; font-size: 28px; cursor: pointer; }
 </style>
 </head>
 
@@ -221,190 +138,174 @@
 <div class="sub-title">Daily Result</div>
 
 <div class="tabs" id="tabs"></div>
-<!-- Hidden input to trigger native calendar -->
-<input type="date" id="calendarTrigger">
 
-<div id="selectedDateDisplay">Loading date...</div>
+<div id="selectedDateDisplay" style="text-align: center; margin-bottom: 20px; font-weight: 600;">Loading...</div>
 
 <div class="search-box">
-    <input type="text" id="searchInput" placeholder="Search Player Name or Email...">
+    <input type="text" id="searchInput" placeholder="Search Player Name...">
 </div>
 
-<div id="content">
-    <div style="padding: 40px; text-align: center; color: #6b7280;">Initializing data...</div>
+<div id="content"></div>
+
+<!-- Custom Calendar Modal -->
+<div id="calendarModal" onclick="if(event.target == this) this.style.display='none'">
+    <div class="cal-container">
+        <div class="cal-header">
+            <button onclick="changeMonth(-1)" style="background:none; border:none; color:white; cursor:pointer;">◀</button>
+            <span id="calMonthYear" style="font-weight: bold;"></span>
+            <button onclick="changeMonth(1)" style="background:none; border:none; color:white; cursor:pointer;">▶</button>
+        </div>
+        <div class="cal-grid" id="calGrid">
+            <!-- Names of days -->
+            <div class="cal-day-name">Sun</div><div class="cal-day-name">Mon</div><div class="cal-day-name">Tue</div>
+            <div class="cal-day-name">Wed</div><div class="cal-day-name">Thu</div><div class="cal-day-name">Fri</div>
+            <div class="cal-day-name">Sat</div>
+        </div>
+    </div>
 </div>
 
-<!-- Popup -->
+<!-- Rank Popup -->
 <div id="popup" class="popup" onclick="if(event.target == this) closePopup()">
     <div class="popup-content">
         <span class="close" onclick="closePopup()">&times;</span>
-        <div id="popupEmoji" style="font-size: 4rem; margin-bottom: 10px;">🏆</div>
-        <h2 id="popupTitle" style="margin: 10px 0;"></h2>
-        <p id="popupScore" style="font-size: 1.5rem; color: var(--zyro-primary); font-weight: bold; margin: 5px 0;"></p>
-        <p id="popupRank" style="color: #9ca3af; margin-top: 10px;"></p>
+        <div id="popupEmoji" style="font-size: 4rem;">🏆</div>
+        <h2 id="popupTitle"></h2>
+        <p id="popupScore" style="color: var(--zyro-primary); font-size: 1.5rem;"></p>
+        <p id="popupRank"></p>
     </div>
 </div>
 
 <script>
 const API_URL = "/api/data";
-
-let sheetData = {};
 let originalSheetData = {};
 let currentSheet = "";
-let searchTimeout;
+let viewDate = new Date(); // For calendar navigation
 
 async function loadSheets() {
     try {
         const res = await fetch(API_URL);
         const data = await res.json();
-
-        sheetData = data;
         originalSheetData = data;
 
-        // Sort dates descending (newest first)
         const sheetNames = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
-
-        if (sheetNames.length === 0) {
-            document.getElementById("content").innerHTML = "<div style='padding:20px;'>No data available.</div>";
-            return;
-        }
+        if (sheetNames.length === 0) return;
 
         currentSheet = sheetNames[0];
         createTabs(sheetNames);
-        renderTable(sheetData[currentSheet]);
+        renderTable(data[currentSheet]);
     } catch (e) {
-        document.getElementById("content").innerHTML = "<div style='padding:20px; color:#ef4444;'>Failed to connect to API.</div>";
+        document.getElementById("content").innerHTML = "Error connecting to data.";
     }
 }
 
 function createTabs(names) {
     const tabs = document.getElementById("tabs");
     tabs.innerHTML = "";
-    
-    // 1. Take only the 4 most recent dates
-    const recentDates = names.slice(0, 4);
-    
-    recentDates.forEach(name => {
+    names.slice(0, 4).forEach(name => {
         const tab = document.createElement("div");
         tab.className = `tab ${name === currentSheet ? 'active' : ''}`;
         tab.innerText = name;
-        tab.onclick = () => {
-            currentSheet = name;
-            renderTable(originalSheetData[name]);
-            updateTabs();
-        };
+        tab.onclick = () => { currentSheet = name; renderTable(originalSheetData[name]); updateTabs(); };
         tabs.appendChild(tab);
     });
 
-    // 2. Add "More" Button
-    const moreTab = document.createElement("div");
-    moreTab.className = "tab more";
-    moreTab.innerText = "📅 More";
-    moreTab.onclick = () => {
-        try {
-            document.getElementById('calendarTrigger').showPicker();
-        } catch (e) {
-            document.getElementById('calendarTrigger').click();
-        }
-    };
-    tabs.appendChild(moreTab);
-
-    // 3. Calendar Selection Logic
-    const calendar = document.getElementById('calendarTrigger');
-    calendar.addEventListener('change', (e) => {
-        const selected = e.target.value; // Format: YYYY-MM-DD
-        
-        // Check if the selected date exists in our keys
-        if (originalSheetData[selected]) {
-            currentSheet = selected;
-            renderTable(originalSheetData[selected]);
-            updateTabs();
-        } else {
-            // Error handling: date not in sheet
-            alert(`No game data found for ${selected}. Please select a date with recorded results.`);
-        }
-    });
+    const moreBtn = document.createElement("div");
+    moreBtn.className = "tab more";
+    moreBtn.innerText = "📅 More";
+    moreBtn.onclick = openCalendar;
+    tabs.appendChild(moreBtn);
 }
 
 function updateTabs() {
-    document.querySelectorAll(".tab").forEach(tab => {
-        // Highlight tab if it matches current selection, otherwise remove active
-        tab.classList.toggle("active", tab.innerText === currentSheet);
-    });
+    document.querySelectorAll(".tab").forEach(tab => tab.classList.toggle("active", tab.innerText === currentSheet));
+}
+
+// Custom Calendar Logic
+function openCalendar() {
+    document.getElementById("calendarModal").style.display = "flex";
+    renderCalendar();
+}
+
+function changeMonth(offset) {
+    viewDate.setMonth(viewDate.getMonth() + offset);
+    renderCalendar();
+}
+
+function renderCalendar() {
+    const grid = document.getElementById("calGrid");
+    const monthYear = document.getElementById("calMonthYear");
+    
+    // Clear previous dates but keep day headers
+    const headers = grid.querySelectorAll('.cal-day-name');
+    grid.innerHTML = "";
+    headers.forEach(h => grid.appendChild(h));
+
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+    monthYear.innerText = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(viewDate);
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    // Empty cells for alignment
+    for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement("div");
+        grid.appendChild(empty);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateObj = new Date(year, month, day);
+        // Format to match your sheet keys (Assuming YYYY-MM-DD)
+        const dateStr = dateObj.toISOString().split('T')[0];
+        
+        const cell = document.createElement("div");
+        cell.className = "cal-date";
+        cell.innerText = day;
+
+        if (originalSheetData[dateStr]) {
+            cell.classList.add("date-available");
+            cell.onclick = () => {
+                currentSheet = dateStr;
+                renderTable(originalSheetData[dateStr]);
+                updateTabs();
+                document.getElementById("calendarModal").style.display = "none";
+            };
+        } else {
+            cell.classList.add("date-empty");
+        }
+        grid.appendChild(cell);
+    }
 }
 
 function renderTable(data) {
     document.getElementById("selectedDateDisplay").innerText = `Results for ${currentSheet}`;
-
     if (!data || data.length === 0) {
-        document.getElementById("content").innerHTML = "<div style='padding:40px; text-align:center;'>No entries for this date.</div>";
+        document.getElementById("content").innerHTML = "<div style='padding:40px;'>No data.</div>";
         return;
     }
-
     let html = "<table><thead><tr><th>Rank</th><th style='text-align:left;'>Player</th><th>Score</th></tr></thead><tbody>";
-
     data.forEach(row => {
         let rank = Number(row.Rank);
-        let medal = "";
-        let rowClass = "";
-
-        if (rank === 1) { medal = "🥇"; rowClass = "gold"; }
-        else if (rank === 2) { medal = "🥈"; rowClass = "silver"; }
-        else if (rank === 3) { medal = "🥉"; rowClass = "bronze"; }
-        else { medal = `<span style="opacity:0.3;">${rank}</span>`; }
-
-        html += `
-        <tr class="${rowClass}" onclick="showPopup('${row.Name}', '${row.Score}', '${rank}')">
-            <td style="width: 80px;">${medal}</td>
-            <td style="text-align: left; font-weight: 500;">${row.Name || "Unknown Player"}</td>
-            <td style="font-family: 'Courier New', monospace; font-weight: bold;">${row.Score || "0"}</td>
+        let medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : rank;
+        html += `<tr onclick="showPopup('${row.Name}', '${row.Score}', '${rank}')">
+            <td>${medal}</td>
+            <td style='text-align:left;'>${row.Name}</td>
+            <td>${row.Score}</td>
         </tr>`;
     });
-
-    html += "</tbody></table>";
-    document.getElementById("content").innerHTML = html;
+    document.getElementById("content").innerHTML = html + "</tbody></table>";
 }
-
-function searchDataLive(query) {
-    if (!query) {
-        renderTable(originalSheetData[currentSheet]);
-        return;
-    }
-    query = query.toLowerCase();
-    const filtered = originalSheetData[currentSheet].filter(row => {
-        const name = (row.Name || "").toLowerCase();
-        const email = (row.Email || row.email || "").toLowerCase();
-        return name.includes(query) || email.includes(query);
-    });
-    renderTable(filtered);
-}
-
-document.getElementById("searchInput").addEventListener("input", (e) => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        searchDataLive(e.target.value);
-    }, 300);
-});
 
 function showPopup(name, score, rank) {
     document.getElementById("popup").style.display = "flex";
-    let emoji = "🏆";
-    if (rank == 1) emoji = "🥇";
-    else if (rank == 2) emoji = "🥈";
-    else if (rank == 3) emoji = "🥉";
-
-    document.getElementById("popupEmoji").innerHTML = emoji;
     document.getElementById("popupTitle").innerText = name;
     document.getElementById("popupScore").innerText = score;
-    document.getElementById("popupRank").innerText = `Position: Rank #${rank}`;
+    document.getElementById("popupRank").innerText = `Rank #${rank}`;
 }
 
-function closePopup() {
-    document.getElementById("popup").style.display = "none";
-}
+function closePopup() { document.getElementById("popup").style.display = "none"; }
 
 loadSheets();
 </script>
-
 </body>
 </html>
